@@ -9,7 +9,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     const size = useWindowSize();
-    return <div style={{ display: "flex", flexDirection: size.width >= 650 ? "row" : "column", height: "100dvh", width: "100vw" }}>
+    return <div style={{ display: "flex", flexDirection: size.width >= 650 ? "row" : "column", height: "100dvh", width: "100vw", background: "var(--qu-background)" }}>
         {size.width >= 650 && <Sidebar />}
         <div style={{ flex: 1 }}>{children}</div>
         {size.width < 650 && <TabBar />}

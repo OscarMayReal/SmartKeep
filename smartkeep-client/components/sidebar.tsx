@@ -23,6 +23,7 @@ export function Sidebar() {
 function SidebarHeader() {
     const { open, setOpen } = useContext(SidebarContext);
     return <div className={"sidebar-header" + (open ? " sidebar-header-open" : " sidebar-header-closed")}>
+        <img src="/icon.svg" className={"sidebar-header-logo" + (open ? " sidebar-header-logo-open" : " sidebar-header-logo-closed")}/>
         <h1 className={"sidebar-header-title" + (open ? " sidebar-header-title-open" : " sidebar-header-title-closed")}>SmartKeep</h1>
         <div style={{ flex: 1 }}/>
         {open ? <SidebarCloseIcon size={20} className="sidebar-header-icon" onClick={() => setOpen(!open)}/> : <SidebarOpenIcon size={20} className="sidebar-header-icon" onClick={() => setOpen(!open)}/>}
