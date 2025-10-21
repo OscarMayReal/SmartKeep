@@ -37,8 +37,8 @@ function SidebarItem({ Icon, title, url }: { Icon: React.JSX.ElementType, title:
         <TooltipTrigger asChild>
             <div className={"sidebar-item" + (open ? " sidebar-item-open" : " sidebar-item-closed") + (path == url ? " sidebar-item-active" : "")} onClick={() => router.push(url)}>
                 {path == url && <motion.div
-                    key={`tabbar-animated-` + url}
-                    layoutId="tabbar-animated"
+                    key={`sidebar-animated-` + url}
+                    layoutId="sidebar-animated"
                     className="sidebar-item-animated"
                     transition={{
                         ease: "easeInOut",
@@ -51,4 +51,31 @@ function SidebarItem({ Icon, title, url }: { Icon: React.JSX.ElementType, title:
         </TooltipTrigger>
         {!open && <TooltipContent side="right">{title}</TooltipContent>}
     </Tooltip>
+}
+
+function TabBarItem({ Icon, title, url }: { Icon: React.JSX.ElementType, title: string, url: string }) {
+    const { open } = useContext(SidebarContext);
+    const router = useRouter();
+    const path = usePathname();
+    return <div className={"tabbar-item" + (path == url ? " tabbar-item-active" : "")} onClick={() => router.push(url)}>
+        {path == url && <motion.div
+            key={`tabbar-animated-` + url}
+            layoutId="tabbar-animated"
+            className="tabbar-item-animated"
+            transition={{
+                ease: "easeInOut",
+            }}
+        />}
+        <Icon className={"tabbar-item-icon"} size={20}/>
+        <h1 className={"tabbar-item-title"}>{title}</h1>
+    </div>
+}
+
+export function TabBar() {
+    return <div className="tabbar">
+        <TabBarItem Icon={HomeIcon} title="Home" url="/app"/>
+        <TabBarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
+        <TabBarItem Icon={UsersIcon} title="People" url="/app/people"/>
+        <TabBarItem Icon={ListIcon} title="Activity" url="/app/activity"/>
+    </div>;
 }

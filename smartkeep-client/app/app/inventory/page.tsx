@@ -1,6 +1,6 @@
 export default function Page() {
     return (
-        <div>
+        <div className="page-layout">
             <h1>Page</h1>
         </div>
     );
