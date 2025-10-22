@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Asset" ALTER COLUMN "location" DROP NOT NULL,
+ALTER COLUMN "barcode" DROP NOT NULL,
+ALTER COLUMN "serialNumber" DROP NOT NULL,
+ALTER COLUMN "checkedOutBy" DROP NOT NULL;

@@ -7,6 +7,7 @@ body {
   width: 100vw;
   top: 0;
   left: 0;
+  position: fixed;
 }
 
 .sidebar {
@@ -18,6 +19,8 @@ body {
   transition: width 0.15s ease-in-out;
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-open {
@@ -52,6 +55,7 @@ body {
 }
 
 .sidebar-item {
+  height: 40px;
   display: flex;
   align-items: center;
   flex-direction: row;
@@ -176,6 +180,15 @@ body {
   align-items: center;
   flex-direction: row;
   padding-bottom: 10px;
+  justify-content: space-between;
+}
+
+.drawer-mainarea {
+    height: 100%;
+    overflow-y: auto;
+    color: var(--qu-text);
+    background-color: var(--qu-background);
+    padding-bottom: 20px;
 }
 
 .sidebar-item-title {
@@ -226,6 +239,12 @@ body {
   --qu-text-color-secondary: #999999;
   font-family: var(--font-figtree);
   user-select: none;
+    --qu-accent: #1c8b5f;
+    --qu-text: #666666;
+    --header-background: #ffffff;
+    --qu-text-secondary: #999999;
+    --qu-border-color: #e4e4e7;
+    font-family: "Figtree", sans-serif;
 }
 
 @custom-variant dark (&:is(.dark *));

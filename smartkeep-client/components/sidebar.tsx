@@ -1,14 +1,16 @@
 "use client";
-import { HomeIcon, LibraryIcon, ListIcon, SidebarCloseIcon, SidebarOpenIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, KeyRoundIcon, LibraryIcon, ListIcon, SidebarCloseIcon, SidebarOpenIcon, UserIcon, UsersIcon } from "lucide-react";
 import { createContext, useContext, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { useAuth } from "keystone-lib";
 
 const SidebarContext = createContext({ open: true, setOpen: (open: boolean) => {} });
 
 export function Sidebar() {
     const [open, setOpen] = useState(true);
+    const session = useAuth({appId: process.env.NEXT_PUBLIC_KEYSTONE_APP_ID as string, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL as string});
     return <SidebarContext.Provider value={{ open, setOpen }}>
         <div className={"sidebar" + (open ? " sidebar-open" : " sidebar-closed")}>
             <SidebarHeader/>
@@ -16,6 +18,10 @@ export function Sidebar() {
             <SidebarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
             <SidebarItem Icon={UsersIcon} title="People" url="/app/people"/>
             <SidebarItem Icon={ListIcon} title="Activity" url="/app/activity"/>
+            <div className="flex-1"/>
+            <SidebarItem Icon={KeyRoundIcon} title="Manage Users" url={process.env.NEXT_PUBLIC_KEYSTONE_FRONTEND_URL + "/admin/users"}/>
+            {session.loaded && session.data?.user && <SidebarItem Icon={UserIcon} title={session.data.user.name} url="/app/profile"/>}
+            <div style={{height: "10px"}}/>
         </div>
     </SidebarContext.Provider>;
 }
