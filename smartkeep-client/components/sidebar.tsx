@@ -1,5 +1,5 @@
 "use client";
-import { HomeIcon, KeyRoundIcon, LibraryIcon, ListIcon, SidebarCloseIcon, SidebarOpenIcon, UserIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, KeyRoundIcon, LibraryIcon, ListIcon, MapPinIcon, SidebarCloseIcon, SidebarOpenIcon, UserIcon, UsersIcon } from "lucide-react";
 import { createContext, useContext, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useRouter, usePathname } from "next/navigation";
@@ -17,7 +17,7 @@ export function Sidebar() {
             <SidebarItem Icon={HomeIcon} title="Home" url="/app"/>
             <SidebarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
             <SidebarItem Icon={UsersIcon} title="People" url="/app/people"/>
-            <SidebarItem Icon={ListIcon} title="Activity" url="/app/activity"/>
+            <SidebarItem Icon={MapPinIcon} title="Locations" url="/app/locations"/>
             <div className="flex-1"/>
             <SidebarItem Icon={KeyRoundIcon} title="Manage Users" url={process.env.NEXT_PUBLIC_KEYSTONE_FRONTEND_URL + "/admin/users"}/>
             {session.loaded && session.data?.user && <SidebarItem Icon={UserIcon} title={session.data.user.name} url="/app/profile"/>}
@@ -83,6 +83,6 @@ export function TabBar() {
         <TabBarItem Icon={HomeIcon} title="Home" url="/app"/>
         <TabBarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
         <TabBarItem Icon={UsersIcon} title="People" url="/app/people"/>
-        <TabBarItem Icon={ListIcon} title="Activity" url="/app/activity"/>
+        <TabBarItem Icon={MapPinIcon} title="Locations" url="/app/locations"/>
     </div>;
 }

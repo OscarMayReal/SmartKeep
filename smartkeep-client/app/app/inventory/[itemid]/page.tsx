@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { useRequests } from "@/lib/useRequests";
-import { QuickActionsItem } from "@/components/assettable";
+import { QuickActionsItem, AssetInfo } from "@/components/assettable";
 
 export default function Page({ params }: { params: { itemid: string } }) {
     const data = useRequests({ requests: [{ url: "/assets/" + params.itemid, resType: "json" }] });
@@ -13,7 +13,8 @@ export default function Page({ params }: { params: { itemid: string } }) {
                     <h2 className="page-header-subtitle">{data?.data["/assets/" + params.itemid].data.id}</h2>
                 </div>
             </div>
-            <QuickActionsItem asset={data?.data["/assets/" + params.itemid].data} />
+            <QuickActionsItem asset={data?.data["/assets/" + params.itemid].data} dataHook={data} />
+            <AssetInfo asset={data?.data["/assets/" + params.itemid].data} />
         </motion.div>
     );
 }

@@ -30,3 +30,15 @@ export async function GetAsset({id}: {id: string}) {
         }
     });
 }
+
+export async function EditAssetCheckedOut({id, checkedOutBy, checkedOut}: {id: string, checkedOutBy: string, checkedOut: boolean}) {
+    return await prisma.asset.update({
+        where: {
+            id
+        },
+        data: {
+            checkedOutBy,
+            checkedOut
+        }
+    });
+}

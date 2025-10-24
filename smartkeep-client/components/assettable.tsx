@@ -29,13 +29,14 @@ import { toast } from "sonner";
 import { addAsset } from "@/lib/assets";
 import { InputField } from "./fields";
 import { useRouter } from "next/navigation";
-import { useAuth } from "keystone-lib";
+import { getAuth, useAuth } from "keystone-lib";
 
 export function AssetsTable({assetsListHook}: {assetsListHook: any}) {
     const [assets, setAssets] = useState<any>([]);
     useEffect(() => {
         if (assetsListHook.loaded) {
             setAssets(assetsListHook.data["/assets"].data?.map((asset: any) => ({
+                selected: false,
                 ...asset,
             })) || [])
         }
@@ -43,6 +44,13 @@ export function AssetsTable({assetsListHook}: {assetsListHook: any}) {
     const table = useReactTable({
         data: assets,
         columns: [
+            {
+                header: "",
+                accessorKey: "selected",
+                cell: ({row}) => <input type="checkbox" checked={row.original.selected} onChange={(e) => row.original.selected = e.target.checked}/>,
+                size: 36,
+                maxSize: 36,
+            },
             {
                 header: "Name",
                 accessorKey: "name",
@@ -140,19 +148,19 @@ function AssetInfoDrawer({open, setOpen, asset, assetsListHook}: {open: boolean,
     );
 }
 
-export function AddAssetDrawer({open, setOpen, AssetsListHook}: {open: boolean, setOpen: (open: boolean) => void, AssetsListHook: any}) {
+export function AddAssetDrawer({open, setOpen, AssetsListHook, children, asChild=true}: {open: boolean, setOpen: (open: boolean) => void, AssetsListHook: any, children?: React.ReactNode, asChild?: boolean}) {
     const [name, setName] = useState("");
     const [location, setLocation] = useState("");
     const [barcode, setBarcode] = useState("");
     const [serialNumber, setSerialNumber] = useState("");
     return (
         <Drawer handleOnly direction="right" open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>
-                <Button variant="outline"><PlusIcon size={20} />Add Asset</Button>
+            <DrawerTrigger asChild={asChild}>
+                {children ? children : <Button variant="outline"><PlusIcon size={20} />Add Asset</Button>}
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle style={{color: "var(--qu-text)", fontWeight: "500"}}>Add Domain</DrawerTitle>
+                    <DrawerTitle style={{color: "var(--qu-text)", fontWeight: "500"}}>Add Asset</DrawerTitle>
                 </DrawerHeader>
                 <Separator />
                 <div className="drawer-mainarea">
@@ -182,10 +190,10 @@ export function AddAssetDrawer({open, setOpen, AssetsListHook}: {open: boolean, 
     );
 }
 
-export function CopyValueRow({value, title}: {value: string, title: string}) {
+export function CopyValueRow({value, title, noMargin}: {value: string, title: string, noMargin?: boolean}) {
     const [copied, setCopied] = useState(false);
     return (
-        <div style={{padding: "20px 20px 0px 20px"}}>
+        <div style={{padding: noMargin ? "0px" : "20px 20px 0px 20px"}}>
             <div style={{fontSize: "14px", fontWeight: "500", marginBottom: "10px"}}>{title}</div>
             <div style={{display: "flex", flexDirection: "row", alignItems: "center", gap: "10px"}}>
                 <Input value={value} readOnly style={{flex: 1, backgroundColor: "var(--header-background)", color: "var(--qu-text)"}} />
@@ -203,7 +211,7 @@ export function CopyValueRow({value, title}: {value: string, title: string}) {
     );
 }
 
-export function QuickActionsItem({asset}: {asset: any}) {
+export function QuickActionsItem({asset, dataHook}: {asset: any, dataHook: any}) {
     const auth = useAuth({
         appId: process.env.NEXT_PUBLIC_KEYSTONE_APP_ID!,
         keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL!,
@@ -212,9 +220,42 @@ export function QuickActionsItem({asset}: {asset: any}) {
         <div className="section-title">Quick Actions</div>
         <div className="quick-actions-row">
             {/* <Button variant="outline" className="button"><PlusIcon/>Add</Button> */}
-            <Button disabled={asset.checkedOut && auth.data?.user.id !== asset.checkedOutBy} variant="outline" className="button"><ArrowUpFromLineIcon/>Check Out</Button>
-            <Button disabled={!asset.checkedOut && auth.data?.user.id !== asset.checkedOutBy} variant="outline" className="button"><ArrowDownFromLineIcon/>Check In</Button>
+            <Button disabled={asset.checkedOut || auth.data?.user.id !== asset.checkedOutBy && asset.checkedOutBy !== null} variant="outline" className="button" onClick={async () => {
+                await checkAssetInOrOut({asset, checkedOut: true});
+                dataHook.reload();
+            }}><ArrowUpFromLineIcon/>Check Out</Button>
+            <Button disabled={!asset.checkedOut || auth.data?.user.id !== asset.checkedOutBy && asset.checkedOutBy !== null} variant="outline" className="button" onClick={async () => {
+                await checkAssetInOrOut({asset, checkedOut: false});
+                dataHook.reload();
+            }}><ArrowDownFromLineIcon/>Check In</Button>
+        </div>
+    </div>
+}
+
+export function AssetInfo({asset}: {asset: any}) {
+    return <div className="section">
+        <div className="section-title">Asset Info</div>
+        <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+            <CopyValueRow noMargin value={asset.name} title="Name" />
+            <CopyValueRow noMargin value={asset.location} title="Location" />
+            <CopyValueRow noMargin value={asset.barcode} title="Barcode" />
+            <CopyValueRow noMargin value={asset.serialNumber} title="Serial Number" />
         </div>
     </div>
 }
     
+export async function checkAssetInOrOut({asset, checkedOut}: {asset: any, checkedOut: boolean}) {
+    const auth = await getAuth({
+        appId: process.env.NEXT_PUBLIC_KEYSTONE_APP_ID!,
+        keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL!,
+    });
+    const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL! + "/assets/" + asset.id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${auth.data?.sessionId}`,
+        },
+        body: JSON.stringify({checkedOutBy: auth.data?.user.id, checkedOut}),
+    });
+    return await response.json();
+}

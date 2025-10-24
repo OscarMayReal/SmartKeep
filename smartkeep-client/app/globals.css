@@ -229,6 +229,131 @@ body {
   color: var(--qu-text-color);
 }
 
+.inventory-ribbon {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  padding-bottom: 10px;
+  justify-content: space-between;
+}
+
+.ribbon-tab-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 30px;
+  margin-bottom: 8px;
+  gap: 20px;
+  position: relative;
+  padding-left: 10px;
+}
+
+.ribbon-item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+  width: fit-content;
+  max-width: 60px;
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.ribbon-content {
+  display: flex;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  height: 100%;
+  gap: 3px;
+  padding: 5px;
+  padding-bottom: 18px;
+  width: fit-content;
+  border-right: 1px solid var(--qu-border);
+}
+
+.ribbon-tab-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.ribbon-group-title {
+  font-size: 12px;
+  color: var(--qu-text-color-secondary);
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ribbon-item:hover {
+  background-color: #00000007;
+}
+
+ribbon-item-icon {
+  flex-shrink: 0;
+  color: var(--qu-text-color);
+}
+
+.ribbon-item-title {
+  font-size: 14px;
+  color: var(--qu-text-color);
+  text-align: center;
+}
+
+.ribbon-item-animated {
+  background-color: #0f8d69;
+  position: absolute;
+  height: 3px;
+  width: 45px;
+  border-radius: 10px;
+  bottom: 0px;
+}
+
+.ribbon-tab {
+  padding: 0px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--qu-text-color);
+}
+
+.ribbon-tab-selected {
+  color: var(--qu-accent);
+}
+
+.ribbon-base {
+  display: flex;
+  flex-direction: column;
+}
+
+.ribbon-item-active {
+  color: var(--qu-accent);
+  background-color: #00000014;
+}
+
+.ribbon-item-active:hover {
+  color: var(--qu-accent);
+  background-color: #00000014;
+}
+
+.ribbon-item > * {
+  color: var(--qu-text-color);
+}
+
+
+.ribbon-item-active > * {
+  color: var(--qu-accent);
+}
+
 * {
   --qu-sidebar-width: 250px;
   --qu-background: rgba(245, 245, 245);

@@ -1,4 +1,4 @@
-import { CreateAsset, GetAsset, GetAssets } from "../functions.ts";
+import { CreateAsset, EditAssetCheckedOut, GetAsset, GetAssets } from "../functions.ts";
 import { VerifySession } from "../keystone.ts";
 import { Router } from "express";
 
@@ -65,6 +65,27 @@ router.get("/:id", async (req, res) => {
         return;
     }
     const asset = await GetAsset({ id: req.params.id });
+    res.json(asset);
+});
+
+router.put("/:id", async (req, res) => {
+    if (!req.headers["authorization"]) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    var session;
+    try {
+        session = await VerifySession({
+            appId: process.env.APP_ID as string,
+            keystoneUrl: process.env.KEYSTONE_URL as string,
+            sessionId: req.headers["authorization"]?.split(" ")[1],
+            appSecret: process.env.APP_SECRET as string
+        });
+    } catch (error) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    const asset = await EditAssetCheckedOut({ id: req.params.id, checkedOutBy: session.user.id, checkedOut: req.body.checkedOut });
     res.json(asset);
 });
 
