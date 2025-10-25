@@ -11,6 +11,7 @@
     "start": "node index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.17.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "prisma": "^6.17.1"

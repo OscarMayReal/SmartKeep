@@ -1,4 +1,4 @@
-import { CreateAsset, EditAssetCheckedOut, GetAsset, GetAssets } from "../functions.ts";
+import { CreateAsset, CreateLocation, EditAssetCheckedOut, GetAsset, GetAssets, GetLocation, GetLocations } from "../functions.ts";
 import { VerifySession } from "../keystone.ts";
 import { Router } from "express";
 
@@ -9,7 +9,7 @@ router.post("/", async (req, res) => {
         res.status(401).json({ error: "Unauthorized" });
         return;
     }
-    const { name, location, barcode, serialNumber } = req.body;
+    const { name, geolocation } = req.body;
     var session;
     try {
         session = await VerifySession({
@@ -22,8 +22,8 @@ router.post("/", async (req, res) => {
         res.status(401).json({ error: "Unauthorized" });
         return;
     }
-    const asset = await CreateAsset({ name, location, barcode, serialNumber, addedBy: session.user.id, tenantId: session.tenant.id });
-    res.json(asset);
+    const location = await CreateLocation({ name, geolocation, tenantId: session.tenant.id });
+    res.json(location);
 });
 
 router.get("/", async (req, res) => {
@@ -47,8 +47,8 @@ router.get("/", async (req, res) => {
         res.status(401).json({ error: "Unauthorized" });
         return;
     }
-    const assets = await GetAssets({ tenantId: session.tenant.id });
-    res.json(assets);
+    const locations = await GetLocations({ tenantId: session.tenant.id });
+    res.json(locations);
 });
 
 router.get("/:id", async (req, res) => {
@@ -68,29 +68,29 @@ router.get("/:id", async (req, res) => {
         res.status(401).json({ error: "Unauthorized" });
         return;
     }
-    const asset = await GetAsset({ id: req.params.id });
-    res.json(asset);
+    const location = await GetLocation({ id: req.params.id });
+    res.json(location);
 });
 
-router.put("/:id", async (req, res) => {
-    if (!req.headers["authorization"]) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-    }
-    var session;
-    try {
-        session = await VerifySession({
-            appId: process.env.APP_ID as string,
-            keystoneUrl: process.env.KEYSTONE_URL as string,
-            sessionId: req.headers["authorization"]?.split(" ")[1],
-            appSecret: process.env.APP_SECRET as string
-        });
-    } catch (error) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-    }
-    const asset = await EditAssetCheckedOut({ id: req.params.id, checkedOutBy: session.user.id, checkedOut: req.body.checkedOut });
-    res.json(asset);
-});
+// router.put("/:id", async (req, res) => {
+//     if (!req.headers["authorization"]) {
+//         res.status(401).json({ error: "Unauthorized" });
+//         return;
+//     }
+//     var session;
+//     try {
+//         session = await VerifySession({
+//             appId: process.env.APP_ID as string,
+//             keystoneUrl: process.env.KEYSTONE_URL as string,
+//             sessionId: req.headers["authorization"]?.split(" ")[1],
+//             appSecret: process.env.APP_SECRET as string
+//         });
+//     } catch (error) {
+//         res.status(401).json({ error: "Unauthorized" });
+//         return;
+//     }
+//     const asset = await EditAssetCheckedOut({ id: req.params.id, checkedOutBy: session.user.id, checkedOut: req.body.checkedOut });
+//     res.json(asset);
+// });
 
 export default router;

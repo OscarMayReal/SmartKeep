@@ -27,16 +27,18 @@ import { ConfirmDialog } from "./confirmDialog";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { addAsset } from "@/lib/assets";
-import { InputField } from "./fields";
+import { BarcodeScannerInput, InputField, SelectInput } from "./fields";
 import { useRouter } from "next/navigation";
 import { getAuth, useAuth } from "keystone-lib";
+import { Checkbox } from "./ui/checkbox";
 
-export function AssetsTable({assetsListHook}: {assetsListHook: any}) {
-    const [assets, setAssets] = useState<any>([]);
+export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook: any, assets: any, setAssets: (assets: any) => void}) {
     useEffect(() => {
-        if (assetsListHook.loaded) {
+        if (assetsListHook.loaded && assetsListHook.data["/assets"]?.data) {
+            console.log(assetsListHook.data["/assets"].data)
             setAssets(assetsListHook.data["/assets"].data?.map((asset: any) => ({
                 selected: false,
+                checkedOutByModified: asset.checkedOut ? asset.checkedOutBy : "",
                 ...asset,
             })) || [])
         }
@@ -47,7 +49,15 @@ export function AssetsTable({assetsListHook}: {assetsListHook: any}) {
             {
                 header: "",
                 accessorKey: "selected",
-                cell: ({row}) => <input type="checkbox" checked={row.original.selected} onChange={(e) => row.original.selected = e.target.checked}/>,
+                cell: ({row}) => <Checkbox checked={row.original.selected} onCheckedChange={(e) => {setAssets(assets.map((asset: any) => {
+                    if (asset.id === row.original.id) {
+                        return {
+                            ...asset,
+                            selected: e,
+                        }
+                    }
+                    return asset;
+                }))}} onClick={(e) => {e.stopPropagation()}} />,
                 size: 36,
                 maxSize: 36,
             },
@@ -73,7 +83,7 @@ export function AssetsTable({assetsListHook}: {assetsListHook: any}) {
             },
             {
                 header: "Checked Out By",
-                accessorKey: "checkedOutBy",
+                accessorKey: "checkedOutByModified",
             },
         ],
         getCoreRowModel: getCoreRowModel(),
@@ -163,12 +173,13 @@ export function AddAssetDrawer({open, setOpen, AssetsListHook, children, asChild
                     <DrawerTitle style={{color: "var(--qu-text)", fontWeight: "500"}}>Add Asset</DrawerTitle>
                 </DrawerHeader>
                 <Separator />
-                <div className="drawer-mainarea">
+                {AssetsListHook.loaded && <div className="drawer-mainarea">
                     <InputField label="Name" value={name} setValue={setName} />
-                    <InputField label="Location" value={location} setValue={setLocation} />
-                    <InputField label="Barcode" value={barcode} setValue={setBarcode} />
+                    <SelectInput label="Location" value={location} setValue={setLocation} options={AssetsListHook.data["/locations"].data.map((location: any) => ({id: location.id, name: location.name}))} />
+                    {/* <InputField label="Barcode" value={barcode} setValue={setBarcode} /> */}
+                    <BarcodeScannerInput value={barcode} title="Barcode" setValue={setBarcode} />
                     <InputField label="Serial Number" value={serialNumber} setValue={setSerialNumber} />
-                </div>
+                </div>}
                 <Separator />
                 <DrawerFooter style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-end"}}>
                     <Button variant="outline" onClick={() => setOpen(false)}><XIcon size={20} />Cancel</Button>

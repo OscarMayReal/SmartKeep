@@ -266,6 +266,8 @@ body {
 
 .ribbon-content {
   display: flex;
+  overflow-x: auto;
+  width: 100%;
 }
 
 .ribbon-group {
@@ -352,6 +354,20 @@ ribbon-item-icon {
 
 .ribbon-item-active > * {
   color: var(--qu-accent);
+}
+
+.ribbon-item-disabled {
+  color: var(--qu-text-color-secondary);
+  cursor: default;
+}
+
+.ribbon-item-disabled > * {
+  color: var(--qu-text-color-secondary);
+}
+
+.ribbon-item-disabled:hover {
+  color: var(--qu-text-color-secondary);
+  background-color: #00000000;
 }
 
 * {

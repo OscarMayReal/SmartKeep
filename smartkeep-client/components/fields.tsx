@@ -1,6 +1,10 @@
-import { HTMLInputTypeAttribute } from "react";
+import { HTMLInputTypeAttribute, useState } from "react";
 import { Input } from "./ui/input";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
+import { Button } from "./ui/button";
+import { BarcodeIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import {BarcodeScanner} from '@thewirv/react-barcode-scanner';
 
 export function InputField({label, value, setValue, type, style, autoComplete}: {label: string, value: string, setValue: (value: string) => void, type?: HTMLInputTypeAttribute, style?: React.CSSProperties, autoComplete?: HTMLInputTypeAttribute}) {
     return (
@@ -42,6 +46,36 @@ export function SelectInput({label, value, setValue, options}: {label: string, v
                     ))}
                 </SelectContent>
             </Select>
+        </div>
+    );
+}
+
+export function BarcodeScannerInput({value, title, noMargin, setValue}: {value: string, title: string, noMargin?: boolean, setValue: (value: string) => void}) {
+    const [open, setOpen] = useState(false);
+    return (
+        <div style={{padding: noMargin ? "0px" : "20px 20px 0px 20px"}}>
+            <div style={{fontSize: "14px", fontWeight: "500", marginBottom: "10px"}}>{title}</div>
+            <div style={{display: "flex", flexDirection: "row", alignItems: "center", gap: "10px"}}>
+                <Input value={value} onChange={(e) => setValue(e.target.value)} style={{flex: 1, backgroundColor: "var(--header-background)", color: "var(--qu-text)"}} />
+                <Button variant="outline" onClick={() => {
+                    setOpen(true);
+                }}>
+                    <BarcodeIcon /> Scan
+                </Button>
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Scan Barcode</DialogTitle>
+                    </DialogHeader>
+                    {open && <BarcodeScanner onSuccess={(barcode) => {
+                        setValue(barcode);
+                        setOpen(false);
+                    }} doScan={open} onError={(error) => {
+                        console.log(error);
+                    }} />}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

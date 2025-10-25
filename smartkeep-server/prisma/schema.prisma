@@ -17,8 +17,8 @@ datasource db {
 model Asset {
   id        String @id @default(cuid())
   name      String
-  location  location @relation(fields: [locationId], references: [id])
-  locationId String
+  location  location? @relation(fields: [locationId], references: [id])
+  locationId String?
   barcode   String?
   serialNumber String?
   checkedOut Boolean @default(false)
@@ -27,8 +27,8 @@ model Asset {
   updatedAt DateTime @updatedAt
   addedBy String
   tenantId String
-  category category @relation(fields: [categoryId], references: [id])
-  categoryId String
+  category category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 }
 
 model category {

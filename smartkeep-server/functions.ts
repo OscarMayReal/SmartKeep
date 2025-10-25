@@ -6,7 +6,7 @@ export async function CreateAsset({name, location, barcode, serialNumber, addedB
     return await prisma.asset.create({
         data: {
             name,
-            location,
+            locationId: location,
             barcode,
             serialNumber,
             addedBy,
@@ -39,6 +39,39 @@ export async function EditAssetCheckedOut({id, checkedOutBy, checkedOut}: {id: s
         data: {
             checkedOutBy,
             checkedOut
+        }
+    });
+}
+
+export async function CreateLocation({name, tenantId, geolocation}: {name: string, geolocation?: string, tenantId: string}) {
+    return await prisma.location.create({
+        data: {
+            name,
+            tenantId,
+            geolocation
+        }
+    });
+}
+
+export async function GetLocations({tenantId}: {tenantId: string}) {
+    return await prisma.location.findMany({
+        where: {
+            tenantId
+        },
+        include: {
+            _count: {
+                select: {
+                    assets: true
+                }
+            }
+        }
+    });
+}
+
+export async function GetLocation({id}: {id: string}) {
+    return await prisma.location.findUnique({
+        where: {
+            id
         }
     });
 }
