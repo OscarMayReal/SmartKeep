@@ -19,6 +19,9 @@ export async function GetAssets({tenantId}: {tenantId: string}) {
     return await prisma.asset.findMany({
         where: {
             tenantId
+        },
+        include: {
+            location: true
         }
     });
 }
@@ -27,6 +30,9 @@ export async function GetAsset({id}: {id: string}) {
     return await prisma.asset.findUnique({
         where: {
             id
+        },
+        include: {
+            location: true
         }
     });
 }
@@ -41,6 +47,26 @@ export async function EditAssetCheckedOut({id, checkedOutBy, checkedOut}: {id: s
             checkedOut
         }
     });
+}
+
+export async function DeleteAsset({id}: {id: string}) {
+    console.log(id)
+    return await prisma.asset.delete({
+        where: {
+            id
+        }
+    });
+}
+
+export function MoveAssetToLocation({assetId, locationId}: {assetId: string, locationId: string}) {
+    return prisma.asset.update({
+        where: {
+            id: assetId
+        },
+        data: {
+            locationId
+        }
+    })
 }
 
 export async function CreateLocation({name, tenantId, geolocation}: {name: string, geolocation?: string, tenantId: string}) {

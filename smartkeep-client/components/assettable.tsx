@@ -31,13 +31,15 @@ import { BarcodeScannerInput, InputField, SelectInput } from "./fields";
 import { useRouter } from "next/navigation";
 import { getAuth, useAuth } from "keystone-lib";
 import { Checkbox } from "./ui/checkbox";
+import { useWindowSize } from "@/lib/screensize";
 
 export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook: any, assets: any, setAssets: (assets: any) => void}) {
     useEffect(() => {
-        if (assetsListHook.loaded && assetsListHook.data["/assets"]?.data) {
+        if (assetsListHook.loaded && assetsListHook.data["/assets"]?.data.length > 0) {
             console.log(assetsListHook.data["/assets"].data)
             setAssets(assetsListHook.data["/assets"].data?.map((asset: any) => ({
                 selected: false,
+                locationName: asset.location?.name,
                 checkedOutByModified: asset.checkedOut ? asset.checkedOutBy : "",
                 ...asset,
             })) || [])
@@ -67,7 +69,7 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
             },
             {
                 header: "Location",
-                accessorKey: "location",
+                accessorKey: "locationName",
             },
             {
                 header: "Barcode",
@@ -96,9 +98,9 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id}>
+                        <TableRow style={{ color: "var(--qu-text)" }} key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
-                                <TableHead key={header.id}>
+                                <TableHead style={{ color: "var(--qu-text)" }} key={header.id}>
                                     {flexRender(header.column.columnDef.header, header.getContext())}
                                 </TableHead>
                             ))}
@@ -107,7 +109,7 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
                 </TableHeader>
                 <TableBody>
                     {table.getRowModel().rows.map((row) => (
-                        <TableRowWithDrawer key={row.id} row={row} assetsListHook={assetsListHook} />
+                        <TableRowWithDrawer key={row.id} row={row} assetsListHook={assetsListHook} assets={assets} setAssets={setAssets} />
                     ))}
                 </TableBody>
             </Table>
@@ -115,7 +117,8 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
     );
 }
 
-const TableRowWithDrawer = ({row, assetsListHook}: {row: Row<any>, assetsListHook: any}) => {
+const TableRowWithDrawer = ({row, assetsListHook, assets, setAssets}: {row: Row<any>, assetsListHook: any, assets: any, setAssets: (assets: any) => void}) => {
+    const screenwidth = useWindowSize();
     // const [open, setOpen] = useState(false);
     const router = useRouter();
     return (
@@ -123,7 +126,15 @@ const TableRowWithDrawer = ({row, assetsListHook}: {row: Row<any>, assetsListHoo
             <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                     // <TableCell key={cell.id} onClick={() => setOpen(true)}>
-                    <TableCell key={cell.id} onClick={() => router.push(`/app/inventory/${row.original.id}`)}>
+                    <TableCell style={{ color: "var(--qu-text)" }} key={cell.id} onClick={() => screenwidth.width < 1120 ? router.push(`/app/inventory/${row.original.id}`) : setAssets(assets.map((asset: any) => {
+                        if (asset.id === row.original.id) {
+                            return {
+                                ...asset,
+                                selected: !asset.selected,
+                            }
+                        }
+                        return asset;
+                    }))}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                 ))}
@@ -173,7 +184,7 @@ export function AddAssetDrawer({open, setOpen, AssetsListHook, children, asChild
                     <DrawerTitle style={{color: "var(--qu-text)", fontWeight: "500"}}>Add Asset</DrawerTitle>
                 </DrawerHeader>
                 <Separator />
-                {AssetsListHook.loaded && <div className="drawer-mainarea">
+                {AssetsListHook.loaded && AssetsListHook.data["/locations"].data.length > 0 && <div className="drawer-mainarea">
                     <InputField label="Name" value={name} setValue={setName} />
                     <SelectInput label="Location" value={location} setValue={setLocation} options={AssetsListHook.data["/locations"].data.map((location: any) => ({id: location.id, name: location.name}))} />
                     {/* <InputField label="Barcode" value={barcode} setValue={setBarcode} /> */}
@@ -247,10 +258,10 @@ export function AssetInfo({asset}: {asset: any}) {
     return <div className="section">
         <div className="section-title">Asset Info</div>
         <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
-            <CopyValueRow noMargin value={asset.name} title="Name" />
-            <CopyValueRow noMargin value={asset.location} title="Location" />
-            <CopyValueRow noMargin value={asset.barcode} title="Barcode" />
-            <CopyValueRow noMargin value={asset.serialNumber} title="Serial Number" />
+            {asset.name && <CopyValueRow noMargin value={asset.name} title="Name" />}
+            {asset.location && <CopyValueRow noMargin value={asset.location?.name} title="Location" />}
+            {asset.barcode && <CopyValueRow noMargin value={asset.barcode} title="Barcode" />}
+            {asset.serialNumber && <CopyValueRow noMargin value={asset.serialNumber} title="Serial Number" />}
         </div>
     </div>
 }

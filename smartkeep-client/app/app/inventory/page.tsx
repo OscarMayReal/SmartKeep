@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/empty"
 import { ArrowLeftIcon, ArrowRightIcon, FileText, LibraryIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWindowSize } from "@/lib/screensize";
 
 export default function Page() {
     const [assets, setAssets] = useState<any>([]);
@@ -33,6 +34,8 @@ export default function Page() {
         console.log(data)
     }, [data]);
     const [open, setOpen] = useState(false);
+    const [index, setIndex] = useState(0);
+    const screenwidth = useWindowSize();
     return (
         <motion.div initial={{ x: 50 }} animate={{ x: 0 }} transition={{ duration: 0.15, ease: "easeOut" }} className="page-layout">
             {/* <div className="page-header">
@@ -42,27 +45,29 @@ export default function Page() {
                 </div>
                 <AddAssetDrawer open={open} setOpen={setOpen} AssetsListHook={data} />
             </div> */}
-            <InventoryRibbon AssetsListHook={data} assets={assets} setAssets={setAssets} /> 
+            <InventoryRibbon index={index} setIndex={setIndex} AssetsListHook={data} assets={assets} setAssets={setAssets} /> 
             <div style={{ height: "10px" }}/>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "start", gap: "10px" }}>
                 <AssetsTable assetsListHook={data} assets={assets} setAssets={setAssets} />
-                <PreviewPane assets={assets} />
+                {screenwidth.width > 1120 && <PreviewPane assets={assets} index={index} setIndex={setIndex} />}
             </div>
         </motion.div>
     );
 }
 
-function PreviewPane({ assets }: { assets: any }) {
-    const [index, setIndex] = useState(0);
+function PreviewPane({ assets, index, setIndex }: { assets: any, index: any, setIndex: any }) {
     useEffect(() => {
         setIndex(0);
     }, [assets]);
     return (
         <div className="w-full">
-            {assets.filter((asset: any) => asset.selected).length > 1 && <div className="rounded-md shadow-sm bg-white w-full mb-[10px]">
-                <div className="flex flex-row p-2 gap-2">
+            {assets.filter((asset: any) => asset.selected).length > 1 && assets.filter((asset: any) => asset.selected).length > index && <div className="rounded-md shadow-sm bg-white w-full mb-[10px]">
+                <div className="flex flex-row p-2 gap-2 items-center">
                     <Button variant="outline" size="sm" disabled={index == 0} onClick={() => setIndex(index - 1)}><ArrowLeftIcon size={20} />Previous</Button>
                     <Button variant="outline" size="sm" disabled={index == assets.filter((asset: any) => asset.selected).length - 1} onClick={() => setIndex(index + 1)}><ArrowRightIcon size={20} />Next</Button>
+                    <div style={{ marginLeft: "10px", color: "var(--qu-text-secondary)" }}>
+                        {index + 1} of {assets.filter((asset: any) => asset.selected).length}
+                    </div>
                 </div>
             </div>}
             <div className="rounded-md shadow-sm bg-white w-full">

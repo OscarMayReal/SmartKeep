@@ -96,7 +96,7 @@ const TableRowWithDrawer = ({row, LocationsListHook}: {row: Row<any>, LocationsL
             <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                     // <TableCell key={cell.id} onClick={() => setOpen(true)}>
-                    <TableCell key={cell.id} onClick={() => router.push(`/app/inventory/${row.original.id}`)}>
+                    <TableCell key={cell.id} onClick={() => router.push(`/app/locations/${row.original.id}`)}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                 ))}

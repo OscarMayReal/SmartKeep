@@ -81,6 +81,7 @@ export async function VerifySession({
             tenant: data.userAppAccess.user.tenant,
         };
     } catch (error) {
+        // console.log(error);
         throw error; // Re-throw to allow the caller to handle the error
     }
 }

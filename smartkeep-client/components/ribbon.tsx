@@ -3,12 +3,17 @@ import { AArrowDownIcon, AArrowUpIcon, ArchiveIcon, ArrowDownFromLineIcon, Arrow
 import { useEffect, useRef, useState } from "react";
 import { AddAssetDrawer, checkAssetInOrOut } from "./assettable";
 import { useAuth } from "keystone-lib";
+import { ConfirmDialog } from "./confirmDialog";
+import { DeleteAsset } from "@/lib/assets";
+import { useRouter } from "next/navigation";
 
-export function InventoryRibbon({AssetsListHook, assets, setAssets}: {AssetsListHook: any, assets: any, setAssets: (assets: any) => void}) {
+export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIndex}: {AssetsListHook: any, assets: any, setAssets: (assets: any) => void, index: any, setIndex: any}) {
     const [selectedTab, setSelectedTab] = useState("Home");
     const [sort, setSort] = useState("nameatoz");
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
     const [createOpen, createOpenSet] = useState(false);
     const tabs = ["Home", "Filter"];
+    const router = useRouter();
     const session = useAuth({appId: process.env.NEXT_PUBLIC_KEYSTONE_APP_ID as string, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL as string});
     return <div className="ribbon-base">
         <RibbonTabRow tabs={tabs} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
@@ -20,15 +25,35 @@ export function InventoryRibbon({AssetsListHook, assets, setAssets}: {AssetsList
                     </AddAssetDrawer>
                 </RibbonGroup>
                 <RibbonGroup title="Delete">
-                    <RibbonItem Icon={Trash2Icon} disabled={!assets.some((asset: any) => asset.selected)} title="Delete Asset"/>
+                    <RibbonItem Icon={Trash2Icon} disabled={!assets.some((asset: any) => asset.selected)} onClick={() => {setConfirmDeleteOpen(true)}} title="Delete Asset"/>
                     <RibbonItem Icon={ArchiveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Archive Asset"/>
+                    <ConfirmDialog title="Confirm Deletion" description="Are you sure you want to delete this asset" isOpen={confirmDeleteOpen} onClose={() => {setConfirmDeleteOpen(false)}} onConfirm={async () => {
+                        for (const asset of assets.filter((asset: any) => asset.selected)) {
+                            await DeleteAsset({assetId: asset.id})
+                        }
+                        setIndex(0);
+                        AssetsListHook.reload()
+                        setConfirmDeleteOpen(false)
+                    }} />
                 </RibbonGroup>
                 <RibbonGroup title="Manage">
-                    <RibbonItem Icon={ArrowUpFromLineIcon} onClick={() => {checkAssetInOrOut({asset: assets.find((asset: any) => asset.selected)!, checkedOut: false}).then(() => AssetsListHook.reload());}} disabled={!assets.some((asset: any) => asset.selected && asset.checkedOut && asset.checkedOutBy == session.data?.user?.id)} title="Check In"/>
-                    <RibbonItem Icon={ArrowDownFromLineIcon} onClick={() => {checkAssetInOrOut({asset: assets.find((asset: any) => asset.selected)!, checkedOut: true}).then(() => AssetsListHook.reload());}} disabled={!assets.some((asset: any) => asset.selected && !asset.checkedOut)} title="Check Out"/>
+                    <RibbonItem Icon={ArrowUpFromLineIcon} onClick={async () => {
+                        for (const asset of assets.filter((asset: any) => asset.selected && asset.checkedOut && asset.checkedOutBy == session.data?.user?.id)) {
+                            await checkAssetInOrOut({asset: asset, checkedOut: false})
+                        }
+                        AssetsListHook.reload()
+                    }} disabled={!assets.some((asset: any) => asset.selected && asset.checkedOut && asset.checkedOutBy == session.data?.user?.id)} title="Check In"/>
+                    <RibbonItem Icon={ArrowDownFromLineIcon} onClick={async () => {
+                        for (const asset of assets.filter((asset: any) => asset.selected && !asset.checkedOut)) {
+                            await checkAssetInOrOut({asset: asset, checkedOut: true})
+                        }
+                        AssetsListHook.reload()
+                    }} disabled={!assets.some((asset: any) => asset.selected && !asset.checkedOut)} title="Check Out"/>
                 </RibbonGroup>
                 <RibbonGroup title="Location">
-                    <RibbonItem Icon={MapPinIcon} disabled={!assets.some((asset: any) => asset.selected)} title="View Location"/>
+                    <RibbonItem Icon={MapPinIcon} disabled={assets.filter((asset: any) => asset.selected).length != 1 || assets.filter((asset: any) => asset.selected)[0].locationId == null} onClick={() => {
+                        router.push(`/app/locations/${assets.filter((asset: any) => asset.selected)[0].locationId}`)
+                    }} title="View Location"/>
                     <RibbonItem Icon={MoveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Change Location"/>
                 </RibbonGroup>
             </RibbonTabContent>}

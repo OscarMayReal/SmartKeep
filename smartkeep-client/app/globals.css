@@ -199,6 +199,7 @@ body {
   transition: width 0.15s ease-in-out, opacity 0.15s ease-in-out;
   overflow: hidden;
   opacity: 1;
+  white-space: nowrap;
 }
 
 .sidebar-item-title-closed {
