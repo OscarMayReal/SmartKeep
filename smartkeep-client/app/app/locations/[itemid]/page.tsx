@@ -18,13 +18,13 @@ export default function ItemPage({ params }: { params: { itemid: string } }) {
                     <h2 className="page-header-subtitle">{data?.data["/locations/" + params.itemid].data.id}</h2>
                 </div>
             </div>
-            <MapContainer className="shadow-sm rounded-md" center={data?.data["/locations/" + params.itemid].data.geolocation.split(", ")} style={{ height: "500px", width: "100%", backgroundColor: "white", overflow: "hidden", marginTop: "10px" }} zoom={20} scrollWheelZoom={false}>
+            {data?.data["/locations/" + params.itemid].data.geolocation && <MapContainer className="shadow-sm rounded-md" center={data?.data["/locations/" + params.itemid].data.geolocation.split(", ")} style={{ height: "500px", width: "100%", backgroundColor: "white", overflow: "hidden", marginTop: "10px" }} zoom={20} scrollWheelZoom={false}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <Marker position={data?.data["/locations/" + params.itemid].data.geolocation.split(", ")} />
-            </MapContainer>
+            </MapContainer>}
         </motion.div>
     );
 }

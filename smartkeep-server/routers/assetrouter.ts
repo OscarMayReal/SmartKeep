@@ -1,4 +1,4 @@
-import { CreateAsset, DeleteAsset, EditAssetCheckedOut, GetAsset, GetAssets } from "../functions.ts";
+import { CreateAsset, DeleteAsset, EditAssetCheckedOut, GetAsset, GetAssets, MoveAssetToLocation } from "../functions.ts";
 import { VerifySession } from "../keystone.ts";
 import { Router } from "express";
 
@@ -111,6 +111,27 @@ router.delete("/:id", async (req, res) => {
         return;
     }
     const asset = await DeleteAsset({ id: req.params.id });
+    res.json(asset);
+});
+
+router.put("/:id/location/:locationId", async (req, res) => {
+    if (!req.headers["authorization"]) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    var session;
+    try {
+        session = await VerifySession({
+            appId: process.env.APP_ID as string,
+            keystoneUrl: process.env.KEYSTONE_URL as string,
+            sessionId: req.headers["authorization"]?.split(" ")[1],
+            appSecret: process.env.APP_SECRET as string
+        });
+    } catch (error) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    const asset = await MoveAssetToLocation({ assetId: req.params.id, locationId: req.params.locationId });
     res.json(asset);
 });
 

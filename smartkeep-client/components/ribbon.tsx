@@ -1,22 +1,22 @@
 import { motion } from "framer-motion";
 import { AArrowDownIcon, AArrowUpIcon, ArchiveIcon, ArrowDownFromLineIcon, ArrowDownToLineIcon, ArrowUpFromLineIcon, BarcodeIcon, ClockIcon, KeyboardIcon, MapPinIcon, MoveIcon, PlusIcon, SearchIcon, Trash2Icon, UserIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { AddAssetDrawer, checkAssetInOrOut } from "./assettable";
+import { AddAssetDrawer, checkAssetInOrOut, MoveAssetToLocationDialog } from "./assettable";
 import { useAuth } from "keystone-lib";
 import { ConfirmDialog } from "./confirmDialog";
 import { DeleteAsset } from "@/lib/assets";
 import { useRouter } from "next/navigation";
+import { AboutDialog } from "./aboutdialog";
 
-export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIndex}: {AssetsListHook: any, assets: any, setAssets: (assets: any) => void, index: any, setIndex: any}) {
+export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIndex, sort, setSort}: {AssetsListHook: any, assets: any, setAssets: (assets: any) => void, index: any, setIndex: any, sort: string, setSort: (sort: string) => void}) {
     const [selectedTab, setSelectedTab] = useState("Home");
-    const [sort, setSort] = useState("nameatoz");
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
     const [createOpen, createOpenSet] = useState(false);
     const tabs = ["Home", "Filter"];
     const router = useRouter();
     const session = useAuth({appId: process.env.NEXT_PUBLIC_KEYSTONE_APP_ID as string, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL as string});
     return <div className="ribbon-base">
-        <RibbonTabRow tabs={tabs} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+        <RibbonTabRow tabs={tabs} extraContent={<AboutDialog/>} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
         <RibbonContent>
             {selectedTab === "Home" && <RibbonTabContent>
                 <RibbonGroup title="Add">
@@ -26,7 +26,7 @@ export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIn
                 </RibbonGroup>
                 <RibbonGroup title="Delete">
                     <RibbonItem Icon={Trash2Icon} disabled={!assets.some((asset: any) => asset.selected)} onClick={() => {setConfirmDeleteOpen(true)}} title="Delete Asset"/>
-                    <RibbonItem Icon={ArchiveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Archive Asset"/>
+                    {/* <RibbonItem Icon={ArchiveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Archive Asset"/> */}
                     <ConfirmDialog title="Confirm Deletion" description="Are you sure you want to delete this asset" isOpen={confirmDeleteOpen} onClose={() => {setConfirmDeleteOpen(false)}} onConfirm={async () => {
                         for (const asset of assets.filter((asset: any) => asset.selected)) {
                             await DeleteAsset({assetId: asset.id})
@@ -54,11 +54,13 @@ export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIn
                     <RibbonItem Icon={MapPinIcon} disabled={assets.filter((asset: any) => asset.selected).length != 1 || assets.filter((asset: any) => asset.selected)[0].locationId == null} onClick={() => {
                         router.push(`/app/locations/${assets.filter((asset: any) => asset.selected)[0].locationId}`)
                     }} title="View Location"/>
-                    <RibbonItem Icon={MoveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Change Location"/>
+                    <MoveAssetToLocationDialog items={assets.filter((asset: any) => asset.selected)} dataHook={AssetsListHook}>
+                        <RibbonItem Icon={MoveIcon} disabled={!assets.some((asset: any) => asset.selected)} title="Change Location"/>
+                    </MoveAssetToLocationDialog>
                 </RibbonGroup>
             </RibbonTabContent>}
             {selectedTab === "Filter" && <RibbonTabContent>
-                <RibbonGroup title="Find">
+                {/* <RibbonGroup title="Find">
                     <RibbonItem Icon={BarcodeIcon} title="Scan Barcode"/>
                     <RibbonItem Icon={KeyboardIcon} title="Serial Number"/>
                     <RibbonItem Icon={SearchIcon} title="Search Name"/>
@@ -66,7 +68,7 @@ export function InventoryRibbon({AssetsListHook, assets, setAssets, index, setIn
                 <RibbonGroup title="Filter">
                     <RibbonItem Icon={MapPinIcon} title="Asset Location"/>
                     <RibbonItem Icon={UserIcon} title="Checked Out To"/>
-                </RibbonGroup>
+                </RibbonGroup> */}
                 <RibbonGroup title="Sort">
                     <RibbonItem Icon={AArrowDownIcon} title="Name (A-Z)" onClick={() => setSort("nameatoz")} active={sort === "nameatoz"}/>
                     <RibbonItem Icon={AArrowUpIcon} title="Name (Z-A)" onClick={() => setSort("nameztoa")} active={sort === "nameztoa"}/>
@@ -104,11 +106,13 @@ function RibbonGroup({children, title}: {children?: React.ReactNode, title: stri
     </div>;
 }
 
-function RibbonTabRow({tabs, selectedTab, setSelectedTab}: {tabs: string[], selectedTab: string, setSelectedTab: (tab: string) => void}) {
+function RibbonTabRow({tabs, selectedTab, setSelectedTab, extraContent}: {tabs: string[], selectedTab: string, setSelectedTab: (tab: string) => void, extraContent?: React.ReactNode}) {
     return <div className="ribbon-tab-row">
         {tabs.map((tab) => (
             <RibbonTab key={tab} tab={tab} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
         ))}
+        <div style={{ flex: 1 }} />
+        {extraContent}
     </div>;
 }
 

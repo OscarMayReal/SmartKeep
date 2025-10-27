@@ -18,9 +18,11 @@ import {
 import { ArrowLeftIcon, ArrowRightIcon, FileText, LibraryIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@/lib/screensize";
+import { AssetTableFooter } from "@/components/assettable";
 
 export default function Page() {
     const [assets, setAssets] = useState<any>([]);
+    const [sort, setSort] = useState("nameatoz");
     useEffect(() => {
         console.log(assets)
     }, [assets]);
@@ -45,10 +47,10 @@ export default function Page() {
                 </div>
                 <AddAssetDrawer open={open} setOpen={setOpen} AssetsListHook={data} />
             </div> */}
-            <InventoryRibbon index={index} setIndex={setIndex} AssetsListHook={data} assets={assets} setAssets={setAssets} /> 
+            <InventoryRibbon index={index} setIndex={setIndex} AssetsListHook={data} assets={assets} setAssets={setAssets} sort={sort} setSort={setSort} /> 
             <div style={{ height: "10px" }}/>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "start", gap: "10px" }}>
-                <AssetsTable assetsListHook={data} assets={assets} setAssets={setAssets} />
+                <AssetsTable assetsListHook={data} assets={assets} setAssets={setAssets} sort={sort} setSort={setSort} />
                 {screenwidth.width > 1120 && <PreviewPane assets={assets} index={index} setIndex={setIndex} />}
             </div>
         </motion.div>
@@ -70,7 +72,7 @@ function PreviewPane({ assets, index, setIndex }: { assets: any, index: any, set
                     </div>
                 </div>
             </div>}
-            <div className="rounded-md shadow-sm bg-white w-full">
+            <div className={"rounded-md shadow-sm bg-white w-full overflow-scroll" + (assets.filter((asset: any) => asset.selected).length > 1 ? " max-h-[calc(100vh-245px)]" : " max-h-[calc(100vh-187px)]")}>
                 {assets.filter((asset: any) => asset.selected).length > 0 ? <ItemPage params={{ itemid: assets.filter((asset: any) => asset.selected)[index].id }} /> : <Empty>
                         <EmptyContent>
                             <EmptyMedia variant="icon">

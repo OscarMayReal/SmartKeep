@@ -27,9 +27,9 @@ export function PrefixedInput({label, value, setValue, prefix, style}: {label: s
     );
 }
 
-export function SelectInput({label, value, setValue, options}: {label: string, value: string, setValue: (value: string) => void, options: {id: string, name: string, description?: string}[]}) {
+export function SelectInput({label, value, setValue, options, noMargin}: {label: string, value: string, setValue: (value: string) => void, options: {id: string, name: string, description?: string}[], noMargin?: boolean}) {
     return (
-        <div style={{padding: "20px 20px 0px 20px"}}>
+        <div style={noMargin ? {padding: "0px"} : {padding: "20px 20px 0px 20px"}}>
             <div style={{fontSize: "14px", fontWeight: "500", marginBottom: "10px"}}>{label}</div>
             <Select value={value} onValueChange={setValue}>
                 <SelectTrigger style={{backgroundColor: "var(--header-background)", width: "100%", height: "fit-content"}}>

@@ -16,9 +16,9 @@ export function Sidebar() {
     return <SidebarContext.Provider value={{ open, setOpen }}>
         <div className={"sidebar shadow-sm" + (open ? " sidebar-open" : " sidebar-closed")}>
             <SidebarHeader/>
-            <SidebarItem Icon={HomeIcon} title="Home" url="/app"/>
+            {/* <SidebarItem Icon={HomeIcon} title="Home" url="/app"/> */}
             <SidebarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
-            <SidebarItem Icon={UsersIcon} title="People" url="/app/people"/>
+            {/* <SidebarItem Icon={UsersIcon} title="People" url="/app/people"/> */}
             <SidebarItem Icon={MapPinIcon} title="Locations" url="/app/locations"/>
             <div className="flex-1"/>
             <SidebarItem Icon={KeyRoundIcon} title="Manage Users" url={process.env.NEXT_PUBLIC_KEYSTONE_FRONTEND_URL + "/admin/users"}/>
@@ -84,25 +84,9 @@ function TabBarItem({ Icon, title, url }: { Icon: React.JSX.ElementType, title: 
 
 export function TabBar() {
     return <div className="tabbar">
-        <TabBarItem Icon={HomeIcon} title="Home" url="/app"/>
+        {/* <TabBarItem Icon={HomeIcon} title="Home" url="/app"/> */}
         <TabBarItem Icon={LibraryIcon} title="Inventory" url="/app/inventory"/>
-        <TabBarItem Icon={UsersIcon} title="People" url="/app/people"/>
+        {/* <TabBarItem Icon={UsersIcon} title="People" url="/app/people"/> */}
         <TabBarItem Icon={MapPinIcon} title="Locations" url="/app/locations"/>
     </div>;
-}
-
-function SidebarFooter() {
-    return (
-        <div style={{padding: "20px"}}>
-            <div className="sidebar-footer-text">
-                Quntem SmartKeep
-            </div>
-            <div className="sidebar-footer-version">
-                Version {info.version}
-            </div>
-            <div className="sidebar-footer-extrainfo">
-                <a href="https://github.com/quntem/smartkeep" target="_blank" style={{textDecoration: "underline"}} rel="noreferrer">GitHub</a>
-            </div>
-        </div>
-    );
 }

@@ -22,29 +22,46 @@ import {
 } from "@/components/ui/drawer"
 import { Separator } from "@/components/ui/separator";
 import { Button } from "./ui/button";
-import { ArrowDownFromLineIcon, ArrowUpFromLineIcon, CheckIcon, ClipboardCopyIcon, PlusIcon, SaveIcon, SearchIcon, XIcon } from "lucide-react";
+import { ArrowDownFromLineIcon, ArrowUpFromLineIcon, CheckIcon, ClipboardCopyIcon, EditIcon, MapPinIcon, PlusIcon, SaveIcon, SearchIcon, XIcon } from "lucide-react";
 import { ConfirmDialog } from "./confirmDialog";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
-import { addAsset } from "@/lib/assets";
+import { addAsset, MoveAssetToLocation } from "@/lib/assets";
 import { BarcodeScannerInput, InputField, SelectInput } from "./fields";
 import { useRouter } from "next/navigation";
 import { getAuth, useAuth } from "keystone-lib";
 import { Checkbox } from "./ui/checkbox";
 import { useWindowSize } from "@/lib/screensize";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useRequests } from "@/lib/useRequests";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { info } from "@/lib/info";
 
-export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook: any, assets: any, setAssets: (assets: any) => void}) {
+export function AssetsTable({assetsListHook, assets, setAssets, sort, setSort}: {assetsListHook: any, assets: any, setAssets: (assets: any) => void, sort: string, setSort: (sort: string) => void}) {
     useEffect(() => {
         if (assetsListHook.loaded && assetsListHook.data["/assets"]?.data.length > 0) {
             console.log(assetsListHook.data["/assets"].data)
-            setAssets(assetsListHook.data["/assets"].data?.map((asset: any) => ({
+            let processedAssets = assetsListHook.data["/assets"].data?.map((asset: any) => ({
                 selected: false,
                 locationName: asset.location?.name,
                 checkedOutByModified: asset.checkedOut ? asset.checkedOutBy : "",
                 ...asset,
-            })) || [])
+            })) || [];
+
+            // Apply sorting
+            if (sort === "nameatoz") {
+                processedAssets.sort((a: any, b: any) => a.name.localeCompare(b.name));
+            } else if (sort === "nameztoa") {
+                processedAssets.sort((a: any, b: any) => b.name.localeCompare(a.name));
+            } else if (sort === "newestfirst") {
+                processedAssets.sort((a: any, b: any) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
+            } else if (sort === "oldestfirst") {
+                processedAssets.sort((a: any, b: any) => new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime());
+            }
+
+            setAssets(processedAssets);
         }
-    }, [assetsListHook]);
+    }, [assetsListHook, sort]);
     const table = useReactTable({
         data: assets,
         columns: [
@@ -66,6 +83,7 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
             {
                 header: "Name",
                 accessorKey: "name",
+                sortingFn: "alphanumeric"
             },
             {
                 header: "Location",
@@ -86,6 +104,12 @@ export function AssetsTable({assetsListHook, assets, setAssets}: {assetsListHook
             {
                 header: "Checked Out By",
                 accessorKey: "checkedOutByModified",
+            },
+            {
+                header: "Created At",
+                accessorKey: "addedAt",
+                sortingFn: "datetime",
+                cell: ({row}) => new Date(row.original.addedAt).toLocaleString(),
             },
         ],
         getCoreRowModel: getCoreRowModel(),
@@ -280,4 +304,70 @@ export async function checkAssetInOrOut({asset, checkedOut}: {asset: any, checke
         body: JSON.stringify({checkedOutBy: auth.data?.user.id, checkedOut}),
     });
     return await response.json();
+}
+
+export function MoveAssetToLocationDialog({items, children, dataHook}: {items: any[], children?: React.ReactNode, dataHook: any}) {
+    const [open, setOpen] = useState(false);
+    const [locationId, setLocationId] = useState("");
+    const locations = useRequests({
+        requests: [
+            {
+                url: "/locations",
+                resType: "json",
+            }
+        ]
+    });
+    return <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+            {children}
+        </DialogTrigger>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Move Asset{items.length > 1 ? "s" : ""} to Location</DialogTitle>
+                <DialogDescription>Move {items.length} asset{items.length > 1 ? "s" : ""} to a different location</DialogDescription>
+            </DialogHeader>
+            <Separator />
+            {locations.loaded && <SelectInput noMargin label="Location" value={locationId} setValue={setLocationId} options={locations.data["/locations"].data.map((location: any) => ({id: location.id, name: location.name}))} />}
+            <Separator />
+            <DialogFooter style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-end"}}>
+                <Button variant="outline" onClick={() => setOpen(false)}><XIcon size={20} />Cancel</Button>
+                <Button onClick={async () => {
+                    for (const item of items) {
+                        await MoveAssetToLocation({assetId: item.id, locationId});
+                    }
+                    dataHook.reload();
+                    setOpen(false);
+                    setLocationId("");
+                }}><SaveIcon size={20} />Save</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+}
+
+export function LocationQuickView({location}: {location: any}) {
+    const router = useRouter();
+    return <div className="section">
+        <div className="section-title">Location Info</div>
+        <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+            <CopyValueRow noMargin value={location.name} title="Name" />
+            {location.geolocation && <MapContainer className="shadow-sm rounded-md" center={location.geolocation.split(", ")} style={{ height: "500px", width: "100%", backgroundColor: "white", overflow: "hidden", marginTop: "10px" }} zoom={20} scrollWheelZoom={false}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={location.geolocation.split(", ")} />
+            </MapContainer>}
+            <Button variant="outline" onClick={() => {
+                router.push("/app/locations/" + location.id);
+            }}><MapPinIcon size={20} />View Location</Button>
+        </div>
+    </div>
+}
+
+export function AssetTableFooter() {
+    return (
+        <span style={{display: "flex", flexDirection: "column", alignItems: "center", color: "var(--qu-text-secondary)", fontSize: "16px", marginTop: "10px"}}>
+            Quntem SmartKeep • Version {info.version} • <span style={{textDecoration: "underline"}}><a href="https://github.com/quntem/smartkeep" target="_blank" rel="noreferrer">GitHub</a></span>
+        </span>
+    );
 }

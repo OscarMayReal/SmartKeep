@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { useRequests } from "@/lib/useRequests";
-import { QuickActionsItem, AssetInfo } from "@/components/assettable";
+import { QuickActionsItem, AssetInfo, LocationQuickView } from "@/components/assettable";
 import { useEffect } from "react";
 
 export default function ItemPage({ params }: { params: { itemid: string } }) {
@@ -19,6 +19,7 @@ export default function ItemPage({ params }: { params: { itemid: string } }) {
             </div>
             <QuickActionsItem asset={data?.data["/assets/" + params.itemid].data} dataHook={data} />
             <AssetInfo asset={data?.data["/assets/" + params.itemid].data} />
+            <LocationQuickView location={data?.data["/assets/" + params.itemid].data.location} />
         </motion.div>
     );
 }
