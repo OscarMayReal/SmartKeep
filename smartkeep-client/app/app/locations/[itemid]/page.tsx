@@ -3,7 +3,13 @@ import { motion } from "framer-motion";
 import { useRequests } from "@/lib/useRequests";
 import { QuickActionsItem, AssetInfo } from "@/components/assettable";
 import { useEffect } from "react";
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import dynamic from "next/dynamic";
+
+// Dynamic import for react-leaflet components to prevent SSR issues
+const DynamicMap = dynamic(() => import('@/components/DynamicMap'), {
+  ssr: false,
+  loading: () => <div style={{ height: '500px', width: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px' }}>Loading map...</div>
+});
 
 export default function ItemPage({ params }: { params: { itemid: string } }) {
     const data = useRequests({ requests: [{ url: "/locations/" + params.itemid, resType: "json" }] });
@@ -18,13 +24,7 @@ export default function ItemPage({ params }: { params: { itemid: string } }) {
                     <h2 className="page-header-subtitle">{data?.data["/locations/" + params.itemid].data.id}</h2>
                 </div>
             </div>
-            {data?.data["/locations/" + params.itemid].data.geolocation && <MapContainer className="shadow-sm rounded-md" center={data?.data["/locations/" + params.itemid].data.geolocation.split(", ")} style={{ height: "500px", width: "100%", backgroundColor: "white", overflow: "hidden", marginTop: "10px" }} zoom={20} scrollWheelZoom={false}>
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={data?.data["/locations/" + params.itemid].data.geolocation.split(", ")} />
-            </MapContainer>}
+            {data?.data["/locations/" + params.itemid].data.geolocation && <DynamicMap center={data?.data["/locations/" + params.itemid].data.geolocation.split(", ").map(Number) as [number, number]} />}
         </motion.div>
     );
 }

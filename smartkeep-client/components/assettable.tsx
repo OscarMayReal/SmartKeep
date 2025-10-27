@@ -33,9 +33,15 @@ import { getAuth, useAuth } from "keystone-lib";
 import { Checkbox } from "./ui/checkbox";
 import { useWindowSize } from "@/lib/screensize";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
 import { useRequests } from "@/lib/useRequests";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { info } from "@/lib/info";
+
+// Dynamic import for react-leaflet components to prevent SSR issues
+const DynamicMap = dynamic(() => import('./DynamicMap'), {
+  ssr: false,
+  loading: () => <div style={{ height: '500px', width: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px' }}>Loading map...</div>
+});
 
 export function AssetsTable({assetsListHook, assets, setAssets, sort, setSort}: {assetsListHook: any, assets: any, setAssets: (assets: any) => void, sort: string, setSort: (sort: string) => void}) {
     useEffect(() => {
@@ -350,13 +356,7 @@ export function LocationQuickView({location}: {location: any}) {
         <div className="section-title">Location Info</div>
         <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
             <CopyValueRow noMargin value={location.name} title="Name" />
-            {location.geolocation && <MapContainer className="shadow-sm rounded-md" center={location.geolocation.split(", ")} style={{ height: "500px", width: "100%", backgroundColor: "white", overflow: "hidden", marginTop: "10px" }} zoom={20} scrollWheelZoom={false}>
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={location.geolocation.split(", ")} />
-            </MapContainer>}
+            {location.geolocation && <DynamicMap center={location.geolocation.split(", ").map(Number) as [number, number]} />}
             <Button variant="outline" onClick={() => {
                 router.push("/app/locations/" + location.id);
             }}><MapPinIcon size={20} />View Location</Button>

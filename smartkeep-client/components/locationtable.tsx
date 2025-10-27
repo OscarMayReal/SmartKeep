@@ -146,7 +146,7 @@ export function AddLocationDrawer({open, setOpen, LocationsListHook, children, a
                 <Separator />
                 <div className="drawer-mainarea">
                     <InputField label="Name" value={name} setValue={setName} />
-                    <InputField label="Geolocation" value={geolocation} setValue={setGeolocation} />
+                    <InputField label="Geolocation (format: lng, lat)" value={geolocation} setValue={setGeolocation} />
                 </div>
                 <Separator />
                 <DrawerFooter style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-end"}}>
