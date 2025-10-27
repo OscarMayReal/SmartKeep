@@ -214,13 +214,13 @@ export function AddAssetDrawer({open, setOpen, AssetsListHook, children, asChild
                     <DrawerTitle style={{color: "var(--qu-text)", fontWeight: "500"}}>Add Asset</DrawerTitle>
                 </DrawerHeader>
                 <Separator />
-                {AssetsListHook.loaded && AssetsListHook.data["/locations"].data.length > 0 && <div className="drawer-mainarea">
+                <div className="drawer-mainarea">
                     <InputField label="Name" value={name} setValue={setName} />
-                    <SelectInput label="Location" value={location} setValue={setLocation} options={AssetsListHook.data["/locations"].data.map((location: any) => ({id: location.id, name: location.name}))} />
+                    {AssetsListHook.loaded && AssetsListHook.data["/locations"].data.length > 0 && <SelectInput label="Location" value={location} setValue={setLocation} options={AssetsListHook.data["/locations"].data.map((location: any) => ({id: location.id, name: location.name}))} />}
                     {/* <InputField label="Barcode" value={barcode} setValue={setBarcode} /> */}
                     <BarcodeScannerInput value={barcode} title="Barcode" setValue={setBarcode} />
                     <InputField label="Serial Number" value={serialNumber} setValue={setSerialNumber} />
-                </div>}
+                </div>
                 <Separator />
                 <DrawerFooter style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-end"}}>
                     <Button variant="outline" onClick={() => setOpen(false)}><XIcon size={20} />Cancel</Button>
